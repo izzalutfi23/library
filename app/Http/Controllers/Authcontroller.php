@@ -55,7 +55,11 @@ class Authcontroller extends Controller
     public function logoutApi()
     { 
         if (Auth::check()) {
-        Auth::user()->AauthAcessToken()->delete();
+            Auth::user()->AauthAcessToken()->delete();
+            return response()->json([
+                'status' => 'berhasil',
+                'message' => 'Logout berhasil'
+            ]);
         }
     }
 }
