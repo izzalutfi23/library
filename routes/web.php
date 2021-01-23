@@ -25,7 +25,7 @@ $router->group(['middleware' => 'auth'], function() use($router){
     $router->get('/getkategori', 'Kategoricontroller@getkategori');
     $router->get('/getarsip', 'Arsipcontroller@getarsip');
     $router->post('/postarsip', 'Arsipcontroller@store');
-    $router->post('/postarsip/{id}', 'Arsipcontroller@update');
-    $router->get('/destroy/{id}', 'Arsipcontroller@destroy');
+    $router->post('/editarsip', 'Arsipcontroller@update');
+    $router->post('/destroy', 'Arsipcontroller@destroy');
     $router->post('logout','Authcontroller@logoutApi');
 });

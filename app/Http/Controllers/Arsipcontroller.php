@@ -8,13 +8,26 @@ use App\Models\Arsip;
 class Arsipcontroller extends Controller
 {
     public function getarsip(){
-        $arsip = Arsip::all();
+        $arsip = Arsip::with(['kategori'=>function($q){
+            $q->select('id', 'kategori');
+        }])->get();
+
+        foreach($arsip as $data){
+            $data->file = json_decode($data->file);
+        }
         return response()->json($arsip, 200);
     }
 
     public function store(Request $request){
         $request->file('file')->move('file/', $request->file('file')->getClientOriginalName());
         $nama_file = $request->file('file')->getClientOriginalName();
+        $url = url("file/{$nama_file}");
+
+        $file = [
+            'nama_file' => $nama_file,
+            'url_file' => $url
+        ];
+        $jsonfile = json_encode($file);
 
         Arsip::create([
             'user_id' => Auth()->user()->id,
@@ -22,7 +35,7 @@ class Arsipcontroller extends Controller
             'tanggal' => $request->tanggal,
             'judul' => $request->judul,
             'kategori_id' => $request->kategori_id,
-            'file' => url("file/{$nama_file}")
+            'file' => $jsonfile
         ]);
 
         return response()->json([
@@ -31,25 +44,32 @@ class Arsipcontroller extends Controller
         ]);
     }
 
-    public function update(Request $request, $id){
+    public function update(Request $request){
         if($request->hasFile('file')){
             $request->file('file')->move('file/', $request->file('file')->getClientOriginalName());
             $nama_file = $request->file('file')->getClientOriginalName();
+            $url = url("file/{$nama_file}");
 
-            $arsip = Arsip::whereId($id)->update([
+            $file = [
+                'nama_file' => $nama_file,
+                'url_file' => $url
+            ];
+            $jsonfile = json_encode($file);
+
+            $arsip = Arsip::whereId($request->id)->update([
                 'user_id' => Auth()->user()->id,
                 'nomor' => $request->nomor,
                 'tanggal' => $request->tanggal,
                 'judul' => $request->judul,
                 'kategori_id' => $request->kategori_id,
-                'file' => url("file/{$nama_file}")
+                'file' => $jsonfile
             ]);
             
             if($arsip){
                 return response()->json([
                     'success' => true,
                     'message' => 'Data berhasil diubah'
-                ], 201);
+                ], 200);
             }
             else{
                 return response()->json([
@@ -59,7 +79,7 @@ class Arsipcontroller extends Controller
             }
         }
         else{
-            $arsip = Arsip::whereId($id)->update([
+            $arsip = Arsip::whereId($request->id)->update([
                 'user_id' => Auth()->user()->id,
                 'nomor' => $request->nomor,
                 'tanggal' => $request->tanggal,
@@ -71,7 +91,7 @@ class Arsipcontroller extends Controller
                 return response()->json([
                     'success' => true,
                     'message' => 'Data berhasil diubah'
-                ], 201);
+                ], 200);
             }
             else{
                 return response()->json([
@@ -82,8 +102,8 @@ class Arsipcontroller extends Controller
         }
     }
 
-    public function destroy($id){
-        $arsip = Arsip::destroy('id', $id);
+    public function destroy(Request $request){
+        $arsip = Arsip::destroy('id', $request->id);
         if($arsip){
             return response()->json([
                 'success' => true,
